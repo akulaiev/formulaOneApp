@@ -15,9 +15,13 @@ class RaceDetailsViewController: UITableViewController, ViewModelDelegate {
     private var driverWikiSegue = "driverWiki"
     private var raceWikiSegue = "raceWiki"
     
+    lazy var viewModel: RaceDetailsViewModel? = {
+        guard let race = race else { return nil }
+        return RaceDetailsViewModel(tableView: resultsTableView, delegate: self, request: Request.raceResults(year: race.season, round: race.round), dataManager: DataManager(cellIdentifier: cellIdentifier))
+    }()
+    
     let cellIdentifier = "resultsCell"
-    var race: Race!
-    var viewModel: RaceDetailsViewModel!
+    var race: Race?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,17 +30,18 @@ class RaceDetailsViewController: UITableViewController, ViewModelDelegate {
     }
     
     func didSelectRow(at indexPath: IndexPath) {
+        guard let viewModel = viewModel else { return }
         let selectedRow = indexPath.row
-        self.selectedDriver = self.viewModel.data[0].resultsInfo[selectedRow].driver
-        self.performSegue(withIdentifier: self.driverWikiSegue, sender: nil)
+        selectedDriver = viewModel.data[0].resultsInfo[selectedRow].driver
+        performSegue(withIdentifier: self.driverWikiSegue, sender: nil)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == driverWikiSegue || segue.identifier == raceWikiSegue {
             let vc = segue.destination as! WebViewController
-            if segue.identifier == driverWikiSegue && selectedDriver != nil {
-                vc.urlString = selectedDriver!.url
-            } else {
+            if let selectedDriver = selectedDriver, segue.identifier == driverWikiSegue {
+                vc.urlString = selectedDriver.url
+            } else if let race = race {
                 vc.urlString = race.url
             }
         }
@@ -48,13 +53,13 @@ class RaceDetailsViewController: UITableViewController, ViewModelDelegate {
     }
     
     fileprivate func setupDataModel() {
-        guard let race = race else { return }
-        viewModel = RaceDetailsViewModel(tableView: resultsTableView, delegate: self, request: Request.raceResults(year: race.season, round: race.round), dataManager: DataManager(cellIdentifier: cellIdentifier))
+        guard let viewModel = viewModel else { return }
         viewModel.fetchData()
         configureRaceCell()
     }
     
     fileprivate func configureRaceCell() {
+        guard let race = race else { return }
         raceCell.textLabel?.text = race.season + " - " + race.round
         raceCell.detailTextLabel?.text = race.raceName + " " + race.date
     }

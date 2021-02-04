@@ -17,16 +17,15 @@ class PastRacesViewController: UIViewController, ViewModelDelegate {
     private var selectedRace: Race?
     private let segueIdentifier = "pastDriverWiki"
     
-    var viewModel: PastRacesViewModel!
+    lazy var viewModel: PastRacesViewModel = {
+        var viewModel = PastRacesViewModel(tableView: tableView, cellIdentifier: cellIdentifier, delegate: self, request: Request.pastRaces(year: "", place: ""), pickerViews: [yearPickerView, placePickerView], pickerButtons: [yearPickerButton, placePickerButton])
+        return viewModel
+    }()
+    
     let cellIdentifier = "filteredRaceInfo"
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupDataModel()
-    }
-    
-    fileprivate func setupDataModel() {
-        viewModel = PastRacesViewModel(tableView: tableView, cellIdentifier: cellIdentifier, delegate: self, request: Request.pastRaces(year: "", place: ""), pickerViews: [yearPickerView, placePickerView], pickerButtons: [yearPickerButton, placePickerButton])
         viewModel.configurePickersDelegates()
     }
     

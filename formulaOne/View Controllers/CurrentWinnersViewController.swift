@@ -8,11 +8,14 @@
 import UIKit
 
 class CurrentWinnersViewController: UITableViewController, ViewModelDelegate {
-    var viewModel: CurrentWinnersViewModel!
     let cellIdentifier = "currentWinnersCell"
     
+    lazy var viewModel: CurrentWinnersViewModel = {
+        return CurrentWinnersViewModel(tableView: tableView, delegate: self, request: Request.currentWinners, dataManager: DataManager(cellIdentifier: cellIdentifier))
+    }()
+    
     private let segueIdentifier = "toResults"
-    private var selectedRace: Race!
+    private var selectedRace: Race?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -20,7 +23,6 @@ class CurrentWinnersViewController: UITableViewController, ViewModelDelegate {
     }
     
     fileprivate func setupDataModel() {
-        viewModel = CurrentWinnersViewModel(tableView: tableView, delegate: self, request: Request.currentWinners, dataManager: DataManager(cellIdentifier: cellIdentifier))
         viewModel.fetchData()
     }
     
