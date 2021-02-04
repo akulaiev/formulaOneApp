@@ -8,7 +8,7 @@
 import Foundation
 
 // MARK: - RaceResults
-struct APIResponse<T: Codable>: Codable {
+struct APIResponse<T: Decodable>: Decodable {
     let data: ResponseData<T>
 
     enum CodingKeys: String, CodingKey {
@@ -17,9 +17,9 @@ struct APIResponse<T: Codable>: Codable {
 }
 
 // MARK: - Response data
-struct ResponseData<T: Codable>: Codable {
+struct ResponseData<T: Decodable>: Decodable {
     var limit, offset, total: String
-    var result, resultRace, resultSeason: APIResult<T>
+    var result: APIResult<T>
 
     enum CodingKeys: String, CodingKey {
         case limit, offset, total, result
@@ -38,14 +38,12 @@ struct ResponseData<T: Codable>: Codable {
         limit = try values.decode(String.self, forKey: .limit)
         offset = try values.decode(String.self, forKey: .offset)
         total = try values.decode(String.self, forKey: .total)
-        resultRace = result
-        resultSeason = result
     }
 }
 
 // MARK: - APIResult
-struct APIResult<T: Codable>: Codable {
-    let results, resultsRace, resultsSeason : [T]
+struct APIResult<T: Decodable>: Decodable {
+    let results: [T]
 
     enum CodingKeys: String, CodingKey {
         case results
@@ -61,13 +59,11 @@ struct APIResult<T: Codable>: Codable {
         } catch {
             results = try values.decode([T].self, forKey: .resultsSeason)
         }
-        resultsRace = results
-        resultsSeason = results
     }
 }
 
 // MARK: - Race
-struct Race: Codable {
+struct Race: Decodable {
     let season, round: String
     let url: String
     let raceName: String
@@ -82,7 +78,7 @@ struct Race: Codable {
 }
 
 // MARK: - ResultInfo
-struct ResultInfo: Codable {
+struct ResultInfo: Decodable {
     let number, position, positionText, points: String
     let driver: Driver
     let grid, laps, status: String
@@ -97,7 +93,7 @@ struct ResultInfo: Codable {
 }
 
 // MARK: - Driver
-struct Driver: Codable {
+struct Driver: Decodable {
     let driverID: String
     let permanentNumber: String?
     let url: String
@@ -110,12 +106,12 @@ struct Driver: Codable {
 }
 
 // MARK: - ResultTime
-struct ResultTime: Codable {
+struct ResultTime: Decodable {
     let millis, time: String
 }
 
 // MARK: - Season
-struct Season: Codable {
+struct Season: Decodable {
     let season: String
     let url: String
 }

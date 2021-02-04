@@ -14,7 +14,7 @@ protocol ViewModelDelegate: class {
     func didSelectRow(at indexPath: IndexPath)
 }
 
-class BaseViewModel<T>: NSObject, DataManagerDelegate, UITableViewDataSourcePrefetching where T: Codable {
+class BaseViewModel<T>: NSObject, DataManagerDelegate, UITableViewDataSourcePrefetching where T: Decodable {
     let tableView: UITableView
     weak var delegateViewController: ViewModelDelegate?
     var request: Request
@@ -69,7 +69,7 @@ class BaseViewModel<T>: NSObject, DataManagerDelegate, UITableViewDataSourcePref
         delegateViewController?.didSelectRow(at: indexPath)
     }
     
-    func updatePaginationParams(with data: Codable, total: Int, calculateReloadIndexPath: Bool) -> [IndexPath]? {
+    func updatePaginationParams(with data: Decodable, total: Int, calculateReloadIndexPath: Bool) -> [IndexPath]? {
         let resultData = data as! [Race]
         paginationParams.update(totalCount: total, requestOffset: resultData.count, dataCount: resultData.count)
         if calculateReloadIndexPath {

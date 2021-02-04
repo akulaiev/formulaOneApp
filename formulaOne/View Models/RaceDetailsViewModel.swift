@@ -18,7 +18,7 @@ class RaceDetailsViewModel: BaseViewModel<Race> {
         return cell
     }
     
-    override func updatePaginationParams(with data: Codable, total: Int, calculateReloadIndexPath: Bool) -> [IndexPath]?  {
+    override func updatePaginationParams(with data: Decodable, total: Int, calculateReloadIndexPath: Bool) -> [IndexPath]?  {
         let resultData = data as! [Race]
         paginationParams.update(totalCount: total, requestOffset: resultData[0].resultsInfo.count, dataCount: resultData[0].resultsInfo.count)
         if calculateReloadIndexPath {

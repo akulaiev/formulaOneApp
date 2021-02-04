@@ -33,7 +33,7 @@ protocol DataManagerDelegate: class {
     func onFetchFailed(with reason: String)
     func configure(cell: UITableViewCell, with indexPath: IndexPath) -> UITableViewCell
     func selectedRow(in tableView: UITableView, at indexPath: IndexPath)
-    func updatePaginationParams(with data: Codable, total: Int, calculateReloadIndexPath: Bool) -> [IndexPath]?
+    func updatePaginationParams(with data: Decodable, total: Int, calculateReloadIndexPath: Bool) -> [IndexPath]?
 }
 
 class DataManager: NSObject {
@@ -48,7 +48,7 @@ class DataManager: NSObject {
         self.cellIdentifier = cellIdentifier
     }
     
-    func fetchData<T: Codable>(for request: Request, type: T.Type, completion: @escaping (Result<([T], [IndexPath]?), Error>) -> Void) {
+    func fetchData<T: Decodable>(for request: Request, type: T.Type, completion: @escaping (Result<([T], [IndexPath]?), Error>) -> Void) {
         guard let delegate = delegate, !isFetchInProgress else { return }
         isFetchInProgress = true
         networkManager.performRequest(request: request, requestOffset: delegate.paginationParams.requestOffset) { [self] (result: Result<APIResponse<T>, Error>) in
