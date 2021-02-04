@@ -18,16 +18,6 @@ class RaceDetailsViewModel: BaseViewModel<Race> {
         return cell
     }
     
-    override func updatePaginationParams(with data: Decodable, total: Int, calculateReloadIndexPath: Bool) -> [IndexPath]?  {
-        let resultData = data as! [Race]
-        paginationParams.update(totalCount: total, requestOffset: resultData[0].resultsInfo.count, dataCount: resultData[0].resultsInfo.count)
-        if calculateReloadIndexPath {
-            let indexPathsToReload = dataManager.calculateIndexPathsToReload(from: resultData[0].resultsInfo.count, allDataCount: paginationParams.dataCount)
-            return indexPathsToReload
-        }
-        return nil
-    }
-    
     override func fetchData() {
         dataManager.fetchData(for: request, type: Race.self) { [self] result in
             switch result {

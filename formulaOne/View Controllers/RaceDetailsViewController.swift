@@ -65,7 +65,7 @@ class RaceDetailsViewController: UITableViewController, ViewModelDelegate {
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if indexPath.row == 1 {
-            return tableView.bounds.height * 0.9
+            return tableView.bounds.height * 0.75
         }
         return tableView.bounds.height * 0.1
     }

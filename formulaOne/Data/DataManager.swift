@@ -33,7 +33,7 @@ protocol DataManagerDelegate: class {
     func onFetchFailed(with reason: String)
     func configure(cell: UITableViewCell, with indexPath: IndexPath) -> UITableViewCell
     func selectedRow(in tableView: UITableView, at indexPath: IndexPath)
-    func updatePaginationParams(with data: Decodable, total: Int, calculateReloadIndexPath: Bool) -> [IndexPath]?
+    func updatePaginationParams(with count: Int, total: Int, calculateReloadIndexPath: Bool) -> [IndexPath]?
 }
 
 class DataManager: NSObject {
@@ -51,13 +51,14 @@ class DataManager: NSObject {
     func fetchData<T: Decodable>(for request: Request, type: T.Type, completion: @escaping (Result<([T], [IndexPath]?), Error>) -> Void) {
         guard let delegate = delegate, !isFetchInProgress else { return }
         isFetchInProgress = true
-        networkManager.performRequest(request: request, requestOffset: delegate.paginationParams.requestOffset) { [self] (result: Result<APIResponse<T>, Error>) in
-            isFetchInProgress = false
+        networkManager.performRequest(request: request, requestOffset: delegate.paginationParams.requestOffset) { [weak self] (result: Result<APIResponse<T>, Error>) in
+            guard let strongSelf = self else { return }
+            strongSelf.isFetchInProgress = false
             switch result {
             case let .failure(error):
                 completion(.failure(error))
             case let .success(response):
-                let indexPathsToReload = delegate.updatePaginationParams(with: response.data.result.results, total: Int(response.data.total) ?? 0, calculateReloadIndexPath: delegate.paginationParams.requestOffset >= Int(response.data.limit)!)
+                let indexPathsToReload = delegate.updatePaginationParams(with: Int(response.data.limit) ?? 0, total: Int(response.data.total) ?? 0, calculateReloadIndexPath: delegate.paginationParams.requestOffset >= Int(response.data.limit)!)
                 completion(.success((response.data.result.results, indexPathsToReload)))
             }
         }

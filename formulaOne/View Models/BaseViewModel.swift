@@ -69,11 +69,10 @@ class BaseViewModel<T>: NSObject, DataManagerDelegate, UITableViewDataSourcePref
         delegateViewController?.didSelectRow(at: indexPath)
     }
     
-    func updatePaginationParams(with data: Decodable, total: Int, calculateReloadIndexPath: Bool) -> [IndexPath]? {
-        let resultData = data as! [Race]
-        paginationParams.update(totalCount: total, requestOffset: resultData.count, dataCount: resultData.count)
+    func updatePaginationParams(with count: Int, total: Int, calculateReloadIndexPath: Bool) -> [IndexPath]? {
+        paginationParams.update(totalCount: total, requestOffset: count, dataCount: count)
         if calculateReloadIndexPath {
-            let indexPathsToReload = dataManager.calculateIndexPathsToReload(from: resultData.count, allDataCount: paginationParams.dataCount)
+            let indexPathsToReload = dataManager.calculateIndexPathsToReload(from: count, allDataCount: paginationParams.dataCount)
             return indexPathsToReload
         }
         return nil
