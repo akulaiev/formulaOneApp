@@ -19,61 +19,50 @@ struct APIResponse<T: Codable>: Codable {
 // MARK: - Response data
 struct ResponseData<T: Codable>: Codable {
     var limit, offset, total: String
-    var result: APIResult<T>
+    var result, resultRace, resultSeason: APIResult<T>
 
     enum CodingKeys: String, CodingKey {
-        case limit, offset, total
-        case result = "RaceTable"
-    }
-    
-    enum AnotherCodingKeys: String, CodingKey {
-        case limit, offset, total
-        case result = "SeasonTable"
+        case limit, offset, total, result
+        case resultRace = "RaceTable"
+        case resultSeason = "SeasonTable"
     }
 
     // required to support multiple key values
     init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
         do {
-            let values = try decoder.container(keyedBy: CodingKeys.self)
-            result = try values.decode(APIResult<T>.self, forKey: .result)
-            limit = try values.decode(String.self, forKey: .limit)
-            offset = try values.decode(String.self, forKey: .offset)
-            total = try values.decode(String.self, forKey: .total)
+            result = try values.decode(APIResult<T>.self, forKey: .resultRace)
         } catch {
-            do {
-                let values = try decoder.container(keyedBy: AnotherCodingKeys.self)
-                result = try values.decode(APIResult<T>.self, forKey: .result)
-                limit = try values.decode(String.self, forKey: .limit)
-                offset = try values.decode(String.self, forKey: .offset)
-                total = try values.decode(String.self, forKey: .total)
-            }
+            result = try values.decode(APIResult<T>.self, forKey: .resultSeason)
         }
+        limit = try values.decode(String.self, forKey: .limit)
+        offset = try values.decode(String.self, forKey: .offset)
+        total = try values.decode(String.self, forKey: .total)
+        resultRace = result
+        resultSeason = result
     }
 }
 
 // MARK: - APIResult
 struct APIResult<T: Codable>: Codable {
-    let results: [T]
+    let results, resultsRace, resultsSeason : [T]
 
     enum CodingKeys: String, CodingKey {
-        case results = "Races"
-    }
-
-    enum AnotherCodingKeys: String, CodingKey {
-        case results = "Seasons"
+        case results
+        case resultsRace = "Races"
+        case resultsSeason = "Seasons"
     }
 
     // required to support multiple key values
     init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
         do {
-            let values = try decoder.container(keyedBy: CodingKeys.self)
-            results = try values.decode([T].self, forKey: .results)
+            results = try values.decode([T].self, forKey: .resultsRace)
         } catch {
-            do {
-                let values = try decoder.container(keyedBy: AnotherCodingKeys.self)
-                results = try values.decode([T].self, forKey: .results)
-            }
+            results = try values.decode([T].self, forKey: .resultsSeason)
         }
+        resultsRace = results
+        resultsSeason = results
     }
 }
 
