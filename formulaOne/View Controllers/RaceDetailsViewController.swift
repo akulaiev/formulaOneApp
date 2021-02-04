@@ -37,8 +37,7 @@ class RaceDetailsViewController: UITableViewController, ViewModelDelegate {
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == driverWikiSegue || segue.identifier == raceWikiSegue {
-            let vc = segue.destination as! WebViewController
+        if let vc = segue.destination as? WebViewController, segue.identifier == driverWikiSegue || segue.identifier == raceWikiSegue {
             if let selectedDriver = selectedDriver, segue.identifier == driverWikiSegue {
                 vc.urlString = selectedDriver.url
             } else if let race = race {

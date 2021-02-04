@@ -34,8 +34,7 @@ class CurrentWinnersViewController: UITableViewController, ViewModelDelegate {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == segueIdentifier {
-            let vc = segue.destination as! RaceDetailsViewController
-            guard let selectedRace = selectedRace else { return }
+            guard let selectedRace = selectedRace, let vc = segue.destination as? RaceDetailsViewController else { return }
             vc.race = selectedRace
         }
     }

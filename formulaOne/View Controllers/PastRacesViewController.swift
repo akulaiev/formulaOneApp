@@ -36,8 +36,7 @@ class PastRacesViewController: UIViewController, ViewModelDelegate {
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let selectedRace = selectedRace, segue.identifier == segueIdentifier {
-            let vc = segue.destination as! WebViewController
+        if let selectedRace = selectedRace, segue.identifier == segueIdentifier, let vc = segue.destination as? WebViewController {
             vc.urlString = selectedRace.url
         }
     }
