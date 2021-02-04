@@ -11,25 +11,25 @@ import UIKit
 class PastRacesViewModel: BaseViewModel<Race> {
     var seasonsData = [Season]()
     
-    private weak var yearPicker: UIPickerView!
-    private weak var placePicker: UIPickerView!
-    private weak var yearPickerButton: UIButton!
-    private weak var placePickerButton: UIButton!
+    private weak var yearPicker: UIPickerView?
+    private weak var placePicker: UIPickerView?
+    private weak var yearPickerButton: UIButton?
+    private weak var placePickerButton: UIButton?
     private var pickedYear = ""
     private var pickedPlace = ""
     
-    init(tableView: UITableView, delegate: ViewModelDelegate, request: Request, pickerViews: [UIPickerView], pickerButtons: [UIButton]) {
-        super.init(tableView: tableView, delegate: delegate, request: request)
+    init(tableView: UITableView, cellIdentifier: String, delegate: ViewModelDelegate, request: Request, pickerViews: [UIPickerView], pickerButtons: [UIButton]) {
+        super.init(tableView: tableView, delegate: delegate, request: request, dataManager: DataManager(cellIdentifier: cellIdentifier))
         yearPicker = pickerViews[0]
         placePicker = pickerViews[1]
         yearPickerButton = pickerButtons[0]
         placePickerButton = pickerButtons[1]
-        yearPicker.tag = 10
-        placePicker.tag = 20
+        yearPicker?.tag = 10
+        placePicker?.tag = 20
     }
     
-    required init(tableView: UITableView, delegate: ViewModelDelegate, request: Request) {
-        fatalError("init(tableView:delegate:request:) has not been implemented")
+    required init(tableView: UITableView, delegate: ViewModelDelegate, request: Request, dataManager: DataManager?) {
+        fatalError("init(tableView:delegate:request:dataManager:) has not been implemented")
     }
     
     fileprivate func fetchSeasonsData(completion: @escaping () -> Void) {
@@ -60,10 +60,11 @@ class PastRacesViewModel: BaseViewModel<Race> {
     
     func configurePickersDelegates() {
         fetchSeasonsData {
-            self.yearPicker.delegate = self
-            self.yearPicker.dataSource = self
-            self.placePicker.delegate = self
-            self.placePicker.dataSource = self
+            guard let yearPicker = self.yearPicker, let placePicker = self.placePicker else { return }
+            yearPicker.delegate = self
+            yearPicker.dataSource = self
+            placePicker.delegate = self
+            placePicker.dataSource = self
         }
     }
     
@@ -100,29 +101,33 @@ extension PastRacesViewModel: UIPickerViewDataSource, UIPickerViewDelegate {
     
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         if pickerView.tag == 10 {
-            return seasonsData.count
+            return seasonsData.count + 1
         } else {
-            return 24
+            return 25
         }
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        if row == 0 { return "" }
         if pickerView.tag == 10 {
-            return seasonsData[row].season
+            return seasonsData[seasonsData.count - row].season
         }
-        return String(row + 1)
+        return String(row)
     }
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        if pickerView.tag == 10 {
-            pickedYear = seasonsData[row].season
+        if row == 0 { return }
+        if let yearPickerButton = yearPickerButton, pickerView.tag == 10 {
+            pickedYear = seasonsData[seasonsData.count - row].season
             yearPickerButton.setTitle(pickedYear + " ▼", for: .normal)
         } else {
-            pickedPlace = String(row + 1)
-            placePickerButton.setTitle(pickedPlace + " ▼", for: .normal)
+            if let placePickerButton = placePickerButton {
+                pickedPlace = String(row)
+                placePickerButton.setTitle(pickedPlace + " ▼", for: .normal)
+            }
         }
         pickerView.isHidden = true
-        if !pickedYear.isEmpty && !pickedPlace.isEmpty {
+        if let tableView = tableView, !pickedYear.isEmpty && !pickedPlace.isEmpty {
             clear(tableView: tableView)
             tableView.isHidden = false
             request = Request.pastRaces(year: pickedYear, place: pickedPlace)

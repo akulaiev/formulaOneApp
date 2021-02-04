@@ -37,36 +37,27 @@ protocol DataManagerDelegate: class {
 }
 
 class DataManager: NSObject {
-    private var tableView: UITableView!
     private var cellIdentifier = ""
     private var isFetchInProgress = false
     
     let networkManager = NetworkManager(requestLimit: 13)
-    weak var delegate: DataManagerDelegate!
+    weak var delegate: DataManagerDelegate?
     
-    init(delegate: DataManagerDelegate, tableView: UITableView, cellIdentifier: String) {
+    init(cellIdentifier: String) {
         super.init()
-        self.delegate = delegate
-        self.tableView = tableView
         self.cellIdentifier = cellIdentifier
-        self.test()
-    }
-    
-    fileprivate func test() {
-        tableView.delegate = self
-        tableView.dataSource = self
     }
     
     func fetchData<T: Codable>(for request: Request, type: T.Type, completion: @escaping (Result<([T], [IndexPath]?), Error>) -> Void) {
-        if isFetchInProgress { return }
+        guard let delegate = delegate, !isFetchInProgress else { return }
         isFetchInProgress = true
-        networkManager.performRequest(request: request, requestOffset: self.delegate.paginationParams.requestOffset) { [self] (result: Result<APIResponse<T>, Error>) in
+        networkManager.performRequest(request: request, requestOffset: delegate.paginationParams.requestOffset) { [self] (result: Result<APIResponse<T>, Error>) in
             isFetchInProgress = false
             switch result {
             case let .failure(error):
                 completion(.failure(error))
             case let .success(response):
-                let indexPathsToReload = delegate.updatePaginationParams(with: response.data.result.results, total: Int(response.data.total) ?? 0, calculateReloadIndexPath: self.delegate.paginationParams.requestOffset >= Int(response.data.limit)!)
+                let indexPathsToReload = delegate.updatePaginationParams(with: response.data.result.results, total: Int(response.data.total) ?? 0, calculateReloadIndexPath: delegate.paginationParams.requestOffset >= Int(response.data.limit)!)
                 completion(.success((response.data.result.results, indexPathsToReload)))
             }
         }
@@ -86,6 +77,7 @@ class DataManager: NSObject {
     }
     
     func isLoadingCell(for indexPath: IndexPath) -> Bool {
+        guard let delegate = delegate else { return false }
         return indexPath.row >= delegate.paginationParams.dataCount
     }
 
@@ -97,6 +89,7 @@ class DataManager: NSObject {
     
     func clear(tableView: UITableView) {
         tableView.reloadData()
+        guard let delegate = delegate else { return }
         delegate.paginationParams = PaginationParams.empty()
     }
 }
@@ -108,7 +101,7 @@ extension DataManager: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return delegate.paginationParams.totalCount
+        return delegate?.paginationParams.totalCount ?? 0
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

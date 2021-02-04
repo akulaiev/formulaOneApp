@@ -14,13 +14,11 @@ class PastRacesViewController: UIViewController, ViewModelDelegate {
     @IBOutlet weak var yearPickerView: UIPickerView!
     @IBOutlet weak var placePickerView: UIPickerView!
     
-    private var observer: Any!
-    private var selectedDriver: Driver?
+    private var selectedRace: Race?
     private let segueIdentifier = "pastDriverWiki"
     
     var viewModel: PastRacesViewModel!
     let cellIdentifier = "filteredRaceInfo"
-    let notificationName = NSNotification.Name("PastRacesCellPicked")
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,24 +26,20 @@ class PastRacesViewController: UIViewController, ViewModelDelegate {
     }
     
     fileprivate func setupDataModel() {
-        viewModel = PastRacesViewModel(tableView: tableView, delegate: self, request: Request.pastRaces(year: "", place: ""), pickerViews: [yearPickerView, placePickerView], pickerButtons: [yearPickerButton, placePickerButton])
-        viewModel.dataManager = DataManager(delegate: viewModel, tableView: tableView, cellIdentifier: cellIdentifier)
+        viewModel = PastRacesViewModel(tableView: tableView, cellIdentifier: cellIdentifier, delegate: self, request: Request.pastRaces(year: "", place: ""), pickerViews: [yearPickerView, placePickerView], pickerButtons: [yearPickerButton, placePickerButton])
         viewModel.configurePickersDelegates()
-        listenForSelectedCellNotifications()
     }
     
-    func listenForSelectedCellNotifications() {
-        observer = NotificationCenter.default.addObserver(forName: notificationName, object: nil, queue: OperationQueue.main) { notification in
-            guard let selectedRow = notification.userInfo?["selectedRow"] as? Int else { return }
-            self.selectedDriver = self.viewModel.data[selectedRow].resultsInfo[0].driver
-            self.performSegue(withIdentifier: self.segueIdentifier, sender: nil)
-        }
+    func didSelectRow(at indexPath: IndexPath) {
+        let selectedRow = indexPath.row
+        self.selectedRace = self.viewModel.data[selectedRow]
+        self.performSegue(withIdentifier: self.segueIdentifier, sender: nil)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == segueIdentifier && selectedDriver != nil{
+        if let selectedRace = selectedRace, segue.identifier == segueIdentifier {
             let vc = segue.destination as! WebViewController
-            vc.urlString = selectedDriver!.url
+            vc.urlString = selectedRace.url
         }
     }
     

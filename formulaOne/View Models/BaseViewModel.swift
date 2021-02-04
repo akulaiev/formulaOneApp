@@ -10,23 +10,28 @@ import UIKit
 
 protocol ViewModelDelegate: class {
     var cellIdentifier: String { get }
-    var notificationName: NSNotification.Name { get }
+    
+    func didSelectRow(at indexPath: IndexPath)
 }
 
 class BaseViewModel<T>: NSObject, DataManagerDelegate, UITableViewDataSourcePrefetching where T: Codable {
-    let tableView: UITableView!
-    weak var delegateViewController: ViewModelDelegate!
-    var request: Request!
-    var dataManager: DataManager!
+    let tableView: UITableView?
+    weak var delegateViewController: ViewModelDelegate?
+    var request: Request
+    var dataManager: DataManager
     var data = [T]()
     var paginationParams = PaginationParams.empty()
     
-    required init(tableView: UITableView, delegate: ViewModelDelegate, request: Request) {
+    required init(tableView: UITableView, delegate: ViewModelDelegate, request: Request, dataManager: DataManager) {
         self.tableView = tableView
         self.delegateViewController = delegate
         self.request = request
+        self.dataManager = dataManager
         super.init()
-        self.tableView.prefetchDataSource = self
+        self.tableView?.prefetchDataSource = self
+        self.dataManager.delegate = self
+        self.tableView?.dataSource = dataManager
+        self.tableView?.delegate = dataManager
     }
     
     func fetchData() {
@@ -44,9 +49,10 @@ class BaseViewModel<T>: NSObject, DataManagerDelegate, UITableViewDataSourcePref
     //MARK: - Data Manager Delegate implementation
     func onFetchCompleted(with newIndexPathsToReload: [IndexPath]?) {
         guard let newIndexPathsToReload = newIndexPathsToReload else {
-            tableView.reloadData()
+            tableView?.reloadData()
             return
         }
+        guard let tableView = tableView else { return }
         let indexPathsToReload = dataManager.visibleIndexPathsToReload(indexPaths: newIndexPathsToReload, tableView: tableView)
         tableView.reloadRows(at: indexPathsToReload, with: .automatic)
     }
@@ -61,7 +67,7 @@ class BaseViewModel<T>: NSObject, DataManagerDelegate, UITableViewDataSourcePref
     
     func selectedRow(in tableView: UITableView, at indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        NotificationCenter.default.post(name: delegateViewController.notificationName, object: self, userInfo: ["selectedRow": indexPath.row])
+        delegateViewController?.didSelectRow(at: indexPath)
     }
     
     func updatePaginationParams(with data: Codable, total: Int, calculateReloadIndexPath: Bool) -> [IndexPath]? {

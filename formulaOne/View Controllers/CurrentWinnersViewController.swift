@@ -10,15 +10,9 @@ import UIKit
 class CurrentWinnersViewController: UITableViewController, ViewModelDelegate {
     var viewModel: CurrentWinnersViewModel!
     let cellIdentifier = "currentWinnersCell"
-    let notificationName = NSNotification.Name("CurrentWinnersCellSelected")
     
     private let segueIdentifier = "toResults"
-    private var observer: Any!
     private var selectedRace: Race!
-    
-    deinit {
-        NotificationCenter.default.removeObserver(observer!)
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,18 +20,14 @@ class CurrentWinnersViewController: UITableViewController, ViewModelDelegate {
     }
     
     fileprivate func setupDataModel() {
-        viewModel = CurrentWinnersViewModel(tableView: tableView, delegate: self, request: Request.currentWinners)
-        viewModel.dataManager = DataManager(delegate: viewModel, tableView: tableView, cellIdentifier: cellIdentifier)
+        viewModel = CurrentWinnersViewModel(tableView: tableView, delegate: self, request: Request.currentWinners, dataManager: DataManager(cellIdentifier: cellIdentifier))
         viewModel.fetchData()
-        listenForSelectedCellNotifications()
     }
     
-    func listenForSelectedCellNotifications() {
-        observer = NotificationCenter.default.addObserver(forName: notificationName, object: nil, queue: OperationQueue.main) { notification in
-            guard let selectedRow = notification.userInfo?["selectedRow"] as? Int else { return }
-            self.selectedRace = self.viewModel.data[selectedRow]
-            self.performSegue(withIdentifier: self.segueIdentifier, sender: nil)
-        }
+    func didSelectRow(at indexPath: IndexPath) {
+        let selectedRow = indexPath.row
+        self.selectedRace = self.viewModel.data[selectedRow]
+        self.performSegue(withIdentifier: self.segueIdentifier, sender: nil)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

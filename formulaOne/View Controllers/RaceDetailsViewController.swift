@@ -11,34 +11,24 @@ class RaceDetailsViewController: UITableViewController, ViewModelDelegate {
     @IBOutlet weak var resultsTableView: UITableView!
     @IBOutlet weak var raceCell: UITableViewCell!
     
-    let cellIdentifier = "resultsCell"
-    let notificationName = NSNotification.Name("DriverCellSelected")
-    
-    private var observer: Any!
     private var selectedDriver: Driver?
     private var driverWikiSegue = "driverWiki"
     private var raceWikiSegue = "raceWiki"
     
+    let cellIdentifier = "resultsCell"
     var race: Race!
     var viewModel: RaceDetailsViewModel!
-    
-    deinit {
-        NotificationCenter.default.removeObserver(observer!)
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupDataModel()
         configureRaceCell()
-        listenForSelectedCellNotifications()
     }
     
-    func listenForSelectedCellNotifications() {
-        observer = NotificationCenter.default.addObserver(forName: notificationName, object: nil, queue: OperationQueue.main) { notification in
-            guard let selectedRow = notification.userInfo?["selectedRow"] as? Int else { return }
-            self.selectedDriver = self.viewModel.data[0].resultsInfo[selectedRow].driver
-            self.performSegue(withIdentifier: self.driverWikiSegue, sender: nil)
-        }
+    func didSelectRow(at indexPath: IndexPath) {
+        let selectedRow = indexPath.row
+        self.selectedDriver = self.viewModel.data[0].resultsInfo[selectedRow].driver
+        self.performSegue(withIdentifier: self.driverWikiSegue, sender: nil)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -59,8 +49,7 @@ class RaceDetailsViewController: UITableViewController, ViewModelDelegate {
     
     fileprivate func setupDataModel() {
         guard let race = race else { return }
-        viewModel = RaceDetailsViewModel(tableView: resultsTableView, delegate: self, request: Request.raceResults(year: race.season, round: race.round))
-        viewModel.dataManager = DataManager(delegate: viewModel, tableView: resultsTableView, cellIdentifier: cellIdentifier)
+        viewModel = RaceDetailsViewModel(tableView: resultsTableView, delegate: self, request: Request.raceResults(year: race.season, round: race.round), dataManager: DataManager(cellIdentifier: cellIdentifier))
         viewModel.fetchData()
         configureRaceCell()
     }
