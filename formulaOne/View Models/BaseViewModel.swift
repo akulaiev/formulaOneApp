@@ -15,7 +15,7 @@ protocol ViewModelDelegate: class {
 }
 
 class BaseViewModel<T>: NSObject, DataManagerDelegate, UITableViewDataSourcePrefetching where T: Codable {
-    let tableView: UITableView?
+    let tableView: UITableView
     weak var delegateViewController: ViewModelDelegate?
     var request: Request
     var dataManager: DataManager
@@ -28,10 +28,10 @@ class BaseViewModel<T>: NSObject, DataManagerDelegate, UITableViewDataSourcePref
         self.request = request
         self.dataManager = dataManager
         super.init()
-        self.tableView?.prefetchDataSource = self
+        self.tableView.prefetchDataSource = self
         self.dataManager.delegate = self
-        self.tableView?.dataSource = dataManager
-        self.tableView?.delegate = dataManager
+        self.tableView.dataSource = dataManager
+        self.tableView.delegate = dataManager
     }
     
     func fetchData() {
@@ -49,10 +49,9 @@ class BaseViewModel<T>: NSObject, DataManagerDelegate, UITableViewDataSourcePref
     //MARK: - Data Manager Delegate implementation
     func onFetchCompleted(with newIndexPathsToReload: [IndexPath]?) {
         guard let newIndexPathsToReload = newIndexPathsToReload else {
-            tableView?.reloadData()
+            tableView.reloadData()
             return
         }
-        guard let tableView = tableView else { return }
         let indexPathsToReload = dataManager.visibleIndexPathsToReload(indexPaths: newIndexPathsToReload, tableView: tableView)
         tableView.reloadRows(at: indexPathsToReload, with: .automatic)
     }

@@ -127,7 +127,7 @@ extension PastRacesViewModel: UIPickerViewDataSource, UIPickerViewDelegate {
             }
         }
         pickerView.isHidden = true
-        if let tableView = tableView, !pickedYear.isEmpty && !pickedPlace.isEmpty {
+        if !pickedYear.isEmpty && !pickedPlace.isEmpty {
             clear(tableView: tableView)
             tableView.isHidden = false
             request = Request.pastRaces(year: pickedYear, place: pickedPlace)
